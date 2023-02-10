@@ -7,10 +7,10 @@ package oo.test
 class Calculator {
 
     private val firstFrame = Frame(1, null)
-    private val lastFrame = firstFrame
+    private var lastFrame = firstFrame
 
     fun nextPoint(point: Int) {
-        lastFrame.nextPoint(point)
+        lastFrame = lastFrame.nextPoint(point)
     }
 
     fun totalPoints(): Int {
@@ -21,7 +21,7 @@ class Calculator {
         return 0
     }
 
-    class Frame(
+    open class Frame(
         private val frameNum: Int,
         private val previousFrame: Frame?,
         private val frameMax: Int = 10,
@@ -33,21 +33,21 @@ class Calculator {
         private var nextFrame: Frame? = null
         private var frameResult: FrameResult = FrameResult.INCOMPLETE
 
-        fun nextPoint(point: Int): Frame {
+        open fun nextPoint(point: Int): Frame {
             if (frameNum > frameMax) {
                 throw GameHasFinishedException()
             }
             if (frameResult.isComplete()) {
-                return newFrame().nextPoint(point)
-            }
-            if (currentFramePoint() + point > 10) {
-                throw InvalidPointException()
+                nextFrame = newFrame().nextPoint(point)
+                return nextFrame!!
             }
             if (throwCount == 0) {
+                if (point > 10) throw InvalidPointException()
                 firstThrow = previousFrame?.lastThrow?.nextPoint(point, frameNum) ?: Throw(point, frameNum)
                 lastThrow = firstThrow
                 throwCount++
             } else {
+                if (currentFramePoint() + point > 10) throw InvalidPointException()
                 lastThrow = lastThrow.nextPoint(point, frameNum)
                 throwCount++
             }
@@ -118,7 +118,7 @@ class Calculator {
         }
 
         fun framePoint(): Int {
-            return point + (nextThrow?.takeIf { it.frameNum == this.frameNum }?.point ?: 0)
+            return point + (nextThrow?.takeIf { it.frameNum == this.frameNum }?.framePoint() ?: 0)
         }
 
         fun bonusPoint(bonusThrow: Int): Int {
