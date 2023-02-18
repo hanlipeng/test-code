@@ -1,37 +1,43 @@
 package oo.test
 
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.MethodSource
-import kotlin.test.assertEquals
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Test
 
-
-/**
- * @author hanlipeng
- * @date 2023/2/7
- */
 class CalculatorTest {
 
-    @ParameterizedTest()
-    @MethodSource("testData")
-    fun testCalculator(points: List<Int>, result: Int) {
-        val calculator = Calculator()
-        points.forEach(calculator::nextPoint)
-        assertEquals(result, calculator.totalPoints())
+    @Test
+    fun testPerfectGame() {
+        val calc = Calculator()
+        repeat(12) { calc.nextPoint(10) }
+        assertEquals(300, calc.totalPoints())
     }
 
-    companion object {
-        @JvmStatic
-        fun testData(): List<Arguments> {
-            val fullStrike =
-                listOf(10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10)
-            return listOf(
-//                Arguments.of(listOf(1, 2), 3),
-//                Arguments.of(listOf(1, 2, 1), 3),
-//                Arguments.of(listOf(1, 2, 1), 3),
-                Arguments.of(listOf(1, 2, 3,2,1,2,3,2,1,2,3,2,1,2,3,2,1,2,3,2), 40),
-                Arguments.of(fullStrike, 300),
-            )
-        }
+    @Test
+    fun testAllSpares() {
+        val calc = Calculator()
+        repeat(21) { calc.nextPoint(5) }
+        assertEquals(150, calc.totalPoints())
+    }
+
+    @Test
+    fun testAllNines() {
+        val calc = Calculator()
+        repeat(10) { calc.nextPoint(9); calc.nextPoint(0) }
+        assertEquals(90, calc.totalPoints())
+    }
+
+    @Test
+    fun testInvalidPoint() {
+        val calc = Calculator()
+        calc.nextPoint(10)
+        assertThrows(InvalidPointException::class.java) { calc.nextPoint(11) }
+    }
+
+    @Test
+    fun testGameHasFinishedException() {
+        val calc = Calculator()
+        repeat(12) { calc.nextPoint(10) }
+        assertThrows(GameHasFinishedException::class.java) { calc.nextPoint(10) }
     }
 }
